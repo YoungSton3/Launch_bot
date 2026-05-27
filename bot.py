@@ -107,7 +107,7 @@ async def lunch(ctx: commands.Context):
         color=discord.Color.orange(),
     )
     embed.set_image(url=url)
-    embed.set_footer(text="출처: 카카오톡 채널 @더좋은밥상 | !점심으로 언제든 호출하세요")
+    embed.set_footer(text="출처: 카카오톡 채널 @더좋은밥상")
     await ctx.send(embed=embed)
 
 

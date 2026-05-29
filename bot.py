@@ -65,12 +65,13 @@ async def lunch(ctx: commands.Context):
     now = datetime.now(KST)
     now_total_min = now.hour * 60 + now.minute
 
-    # 오전 10시 이전 → 업로드 전
-    if now_total_min < 10 * 60:
-        remaining_min = (10 * 60) - now_total_min
+    # 오전 9시 30분 이전 → 업로드 전
+    UPLOAD_TIME_MIN = 9 * 60 + 30  # 09:30
+    if now_total_min < UPLOAD_TIME_MIN:
+        remaining_min = UPLOAD_TIME_MIN - now_total_min
         await ctx.send(
             f"⏰ 아직 메뉴 업로드 전이에요!\n"
-            f"더좋은밥상은 보통 **오전 10시**에 오늘의 메뉴를 올려요.\n"
+            f"더좋은밥상은 보통 **오전 9시 30분**에 오늘의 메뉴를 올려요.\n"
             f"> 현재 시각: **{now.strftime('%H:%M')}** — {remaining_min // 60}시간 {remaining_min % 60}분 후에 다시 시도해보세요 🙏"
         )
         return

@@ -2,13 +2,16 @@ import discord
 import aiohttp
 import re
 import os
-from datetime import datetime, timezone, timedelta
-from discord.ext import commands
+from datetime import datetime, timezone, timedelta, time
+from discord.ext import commands, tasks
 
 # ===== 설정 =====
 DISCORD_TOKEN = os.environ["DISCORD_TOKEN"]  # Railway 환경변수에서 읽음
 KAKAO_CHANNEL_URL = "https://pf.kakao.com/_xfWxfCxj"
+LUNCH_GREETING_CHANNEL_ID = 1468475578624774271  # 맛있는 점심 식사-모두
 # ================
+
+KST = timezone(timedelta(hours=9))
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -53,15 +56,33 @@ async def get_lunch_image_url() -> str | None:
     return original_url
 
 
+LUNCH_GREETINGS = [
+    "🍚 오후 12시 50분이에요! 맛있는 점심 드세요~ 😋",
+    "🍱 점심시간! 오늘도 맛있게 드세요 🙌",
+    "🥢 배꼽시계 울릴 시간이에요! 맛점하세요 😊",
+]
+
+
+@tasks.loop(time=time(hour=12, minute=50, tzinfo=KST))
+async def send_lunch_greeting():
+    channel = bot.get_channel(LUNCH_GREETING_CHANNEL_ID)
+    if channel is None:
+        print(f"[경고] 인사 채널(ID: {LUNCH_GREETING_CHANNEL_ID})을 찾을 수 없어요.")
+        return
+    greeting = LUNCH_GREETINGS[datetime.now(KST).toordinal() % len(LUNCH_GREETINGS)]
+    await channel.send(greeting)
+
+
 @bot.event
 async def on_ready():
     print(f"✅ 봇 로그인 완료: {bot.user} (ID: {bot.user.id})")
     print("!점심 명령어를 대기 중입니다...")
+    if not send_lunch_greeting.is_running():
+        send_lunch_greeting.start()
 
 
 @bot.command(name="점심")
 async def lunch(ctx: commands.Context):
-    KST = timezone(timedelta(hours=9))
     now = datetime.now(KST)
     now_total_min = now.hour * 60 + now.minute
 

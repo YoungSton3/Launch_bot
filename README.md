@@ -25,7 +25,7 @@ pip install -r requirements.txt
    - 생성된 URL로 봇을 서버에 초대
 
 ## 4. 토큰 설정
-`bot.py`는 토큰을 코드에 직접 넣지 않고 환경변수 `DISCORD_TOKEN`에서 읽습니다.
+`bot.py`는 토큰을 코드에 직접 넣지 않고 환경변수 `DISCORD_TOKEN`에서 읽습니다. 참고용으로 `.env.example` 파일에 어떤 값이 필요한지 적어뒀습니다 (`.env`는 `.gitignore`에 등록되어 있어 실제 토큰 파일은 커밋되지 않습니다).
 
 **로컬에서 실행할 때:**
 ```
@@ -35,6 +35,7 @@ $env:DISCORD_TOKEN = "복사한_토큰"
 # macOS / Linux
 export DISCORD_TOKEN="복사한_토큰"
 ```
+> 참고: 현재 `bot.py`는 `.env` 파일을 자동으로 읽지 않습니다. `.env` 파일을 만들어 자동 로드하고 싶다면 `python-dotenv` 패키지 추가가 필요합니다 (원하시면 설정해드릴 수 있어요).
 
 **Railway에 배포할 때:**
 1. Railway 프로젝트 → 실제로 봇이 실행되는 서비스 선택

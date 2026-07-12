@@ -65,6 +65,8 @@ LUNCH_GREETINGS = [
 
 @tasks.loop(time=time(hour=12, minute=50, tzinfo=KST))
 async def send_lunch_greeting():
+    if datetime.now(KST).weekday() >= 5:  # 토(5)/일(6)요일은 스킵
+        return
     channel = bot.get_channel(LUNCH_GREETING_CHANNEL_ID)
     if channel is None:
         print(f"[경고] 인사 채널(ID: {LUNCH_GREETING_CHANNEL_ID})을 찾을 수 없어요.")

@@ -53,6 +53,9 @@ async def get_lunch_image_url() -> str | None:
         return None
 
     original_url = re.sub(r"/img_[a-z]+\.jpg", "/img.jpg", img_url)
+    # Discord 임베드는 HTTP 이미지를 렌더링하지 않으므로 HTTPS로 강제 변환
+    if original_url.startswith("http://"):
+        original_url = "https://" + original_url[len("http://"):]
     return original_url
 
 

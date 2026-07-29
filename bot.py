@@ -1,5 +1,6 @@
 import discord
 import aiohttp
+import io
 import re
 import os
 from datetime import datetime, timezone, timedelta, time
@@ -59,6 +60,28 @@ async def get_lunch_image_url() -> str | None:
     return original_url
 
 
+async def get_lunch_image_bytes() -> bytes | None:
+    url = await get_lunch_image_url()
+    if not url:
+        return None
+
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/124.0.0.0 Safari/537.36"
+        ),
+        "Referer": KAKAO_CHANNEL_URL,
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as resp:
+            if resp.status != 200:
+                print(f"[경고] 이미지 응답 코드: {resp.status}")
+                return None
+            return await resp.read()
+
+
 LUNCH_GREETINGS = [
     "🍚 오후 12시 50분이에요! 맛있는 점심 드세요~ 😋",
     "🍱 점심시간! 오늘도 맛있게 드세요 🙌",
@@ -113,7 +136,7 @@ async def lunch(ctx: commands.Context):
 
     async with ctx.typing():
         try:
-            url = await get_lunch_image_url()
+            image_bytes = await get_lunch_image_bytes()
         except aiohttp.ClientConnectorError:
             await ctx.send("❌ 네트워크 오류로 카카오 채널에 접근할 수 없어요.")
             return
@@ -121,21 +144,22 @@ async def lunch(ctx: commands.Context):
             await ctx.send(f"❌ 오류 발생: `{e}`")
             return
 
-    if not url:
+    if not image_bytes:
         await ctx.send(
             "😢 오늘의 메뉴 이미지를 찾지 못했어요.\n"
             "아직 업로드 전이거나(보통 **오전 10시** 이후) 페이지 구조가 바뀌었을 수 있어요."
         )
         return
 
+    file = discord.File(io.BytesIO(image_bytes), filename="lunch.jpg")
     embed = discord.Embed(
         title="🍱 오늘의 점심 메뉴",
         description="📍 더좋은밥상 (대륭17차 구내식당)",
         color=discord.Color.orange(),
     )
-    embed.set_image(url=url)
+    embed.set_image(url="attachment://lunch.jpg")
     embed.set_footer(text="출처: 카카오톡 채널 @더좋은밥상")
-    await ctx.send(embed=embed)
+    await ctx.send(file=file, embed=embed)
 
 
 bot.run(DISCORD_TOKEN)
